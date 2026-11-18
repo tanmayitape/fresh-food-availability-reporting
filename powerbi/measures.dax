@@ -1,0 +1,41 @@
+// All report measures in one block for Power BI's DAX query view.
+// 1. Create an empty table called _Measures first (Home > Enter data > name it _Measures > Load).
+//    Not plain 'Measures': that name is reserved by the engine and queries cannot find it.
+// 2. Open DAX query view (left bar, 4th icon), paste this whole file, press Run (F5).
+// 3. Click "Update model with changes" above the query to add every measure to the _Measures table.
+// 4. The result grid should match SQL Server: Availability % 0.8012, Lines Out All Day 181,791,
+//    Stores Below Target 433, DQ Rows Failed 49,819. If it does, the model and relationships are right.
+
+DEFINE
+    MEASURE '_Measures'[Trading Hours] = COUNTROWS ( fact_daily_sales ) * 16
+    MEASURE '_Measures'[OOS Hours] = SUM ( fact_daily_sales[oos_hours] )
+    MEASURE '_Measures'[Availability %] = 1 - DIVIDE ( [OOS Hours], [Trading Hours] )
+    MEASURE '_Measures'[Sale Units] = SUM ( fact_daily_sales[sale_units] )
+    MEASURE '_Measures'[Lines Out All Day] =
+        CALCULATE ( COUNTROWS ( fact_daily_sales ), fact_daily_sales[oos_hours] = 16 )
+    MEASURE '_Measures'[Lines With A Gap] =
+        CALCULATE ( COUNTROWS ( fact_daily_sales ), fact_daily_sales[oos_hours] > 0 )
+    MEASURE '_Measures'[Gap Rate %] = DIVIDE ( [Lines With A Gap], COUNTROWS ( fact_daily_sales ) )
+    MEASURE '_Measures'[Availability % Prev Week] =
+        CALCULATE ( [Availability %], DATEADD ( dim_date[dt], -7, DAY ) )
+    MEASURE '_Measures'[Availability Change (pts)] = [Availability %] - [Availability % Prev Week]
+    MEASURE '_Measures'[Availability Target] = 0.8
+    MEASURE '_Measures'[Stores Below Target] =
+        COUNTROWS ( FILTER ( VALUES ( dim_store[store_id] ), [Availability %] < [Availability Target] ) )
+    MEASURE '_Measures'[Promo Availability %] =
+        CALCULATE ( [Availability %], fact_daily_sales[promo_flag] = TRUE () )
+    MEASURE '_Measures'[DQ Rows Failed] =
+        CALCULATE ( SUM ( dq_results[rows_failed] ), dq_results[run_at] = MAX ( dq_results[run_at] ) )
+
+    // Colour for conditional formatting (Format > Cell elements / Bars > fx > Field value).
+    // Placeholder for Page 2: will return a hex colour such as "#C0392B" based on [Availability %].
+    MEASURE '_Measures'[Availability Colour] =
+        BLANK ()
+
+EVALUATE
+    ROW (
+        "Availability %", [Availability %],
+        "Lines Out All Day", [Lines Out All Day],
+        "Stores Below Target", [Stores Below Target],
+        "DQ Rows Failed", [DQ Rows Failed]
+    )

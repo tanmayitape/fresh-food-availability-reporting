@@ -6,6 +6,11 @@ report and an Excel MI pack formatted by a VBA macro.
 
 **Tools:** SQL Server (T-SQL), Python (pandas, pyodbc), Power BI (DAX), Excel VBA.
 
+![Power BI overview page, week commencing 17 June 2024](powerbi/screenshots/01-overview.png)
+
+*Power BI overview page, filtered to the week commencing 17 June 2024. The cards and city bars follow the
+week slicer; the daily line keeps the full 90 days for context.*
+
 ## The question
 
 Which stores, categories and lines are out of stock most often, and where should a replenishment team look
@@ -30,7 +35,7 @@ units and never as money. The data has no waste or stock-on-hand figures.
 | 5 | `sql/04_views.sql` | Reporting views: availability by store-day, city-week and category-week, a lost-sales estimate and the worst lines of the latest full week |
 | 6 | `weekly_pack.py` | Exports the latest full week to an Excel workbook (4 sheets) |
 | 7 | `vba/FormatWeeklyPack.bas` | Formats the workbook: titles, headers, number formats, filters, and highlights availability under 80% |
-| 8 | `powerbi/BUILD_GUIDE.md` | Model, DAX measures and page layout for the Power BI report |
+| 8 | `powerbi/fresh-food-availability-reporting.pbix` | Power BI report on the star schema (Import mode), built with `powerbi/measures.dax` and `powerbi/theme.json`; steps in `powerbi/BUILD_GUIDE.md` |
 
 Availability is measured in hours: `1 - out-of-stock hours / (lines x 16 trading hours)`.
 
@@ -42,6 +47,8 @@ Availability is measured in hours: `1 - out-of-stock hours / (lines x 16 trading
 - Weekends were worse than weekdays: 78.8% against 80.7%.
 - Lines on promotion had slightly lower availability (79.4%) than lines off promotion (80.5%).
 - Cities ranged from 77.4% to 81.1%. Categories varied more: the weakest first-level category was at 72.2%.
+- In the week commencing 17 June, availability was 81.3%, down 0.45 points on the week before (81.8%).
+  328 of 898 stores were below the 80% target, and 10,340 store-product-days were out of stock all day.
 
 ## Data quality results
 
@@ -81,3 +88,6 @@ set SQLSERVER_INSTANCE=localhost\SQLEXPRESS
 
 The load takes about 20 minutes on a laptop. Open the workbook in `output/`, import
 `vba/FormatWeeklyPack.bas` (Alt+F11 > File > Import File) and run `FormatWeeklyPack`.
+
+To refresh the Power BI report against your own SQL Server, open the `.pbix`, go to
+Transform data > Data source settings and point it at your instance and the `FreshRetail` database.
