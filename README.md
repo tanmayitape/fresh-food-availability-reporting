@@ -17,6 +17,12 @@ week slicer; the daily line keeps the full 90 days for context.*
 it and green from 82%, using one DAX colour measure. The scatter puts sales on a log scale, so big sellers
 below the line stand out.*
 
+![Power BI store drill-down page, week commencing 17 June 2024](powerbi/screenshots/03-stores.png)
+
+*Store drill-down page. The table ranks the 20 worst stores among those stocking 20 or more lines, so
+one-product stores do not crowd the list. The weekday chart ignores the week slicer and shows all 90 days.
+Right-clicking a city on the overview page drills through to this page for that city.*
+
 ## The question
 
 Which stores, categories and lines are out of stock most often, and where should a replenishment team look
@@ -58,6 +64,11 @@ Availability is measured in hours: `1 - out-of-stock hours / (lines x 16 trading
 - In the same week, 8 of 32 categories were below target, 7 were within 2 points above it and 17 were at
   82% or better. The 8 below target made up 22.8% of unit sales. The one to fix first is category 29:
   74.1% availability on 36,369 units, the largest seller below target.
+- Ranking stores needs a size threshold. In that week the worst store overall, at 36.6%, stocked a single
+  line. Among the 808 stores with 20 or more lines, the worst was store 417 at 64.5% across 92 lines. The 20
+  worst of those averaged 71.9%, and 7 of them were in city 4.
+- By weekday over the 90 days, Sunday was lowest (77.6%) and Friday highest (82.5%). Monday, Tuesday and
+  Sunday were all below target.
 
 ## Data quality results
 

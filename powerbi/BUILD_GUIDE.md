@@ -1,8 +1,7 @@
 # Power BI report: build guide
 
 The finished report is `powerbi/fresh-food-availability-reporting.pbix` (about 10 MB). Screenshots of each
-page go in `powerbi/screenshots/` so the report is visible on GitHub. Pages 1 and 2 are built; pages 3 and 4
-are planned.
+page go in `powerbi/screenshots/` so the report is visible on GitHub. Pages 1–3 are built; page 4 is planned.
 
 ## 1. Connect
 
@@ -111,11 +110,19 @@ thousands separator. Model view is the easiest place: Ctrl+click several measure
   from there up. Use Field value, not Gradient: a gradient rescales to each week's range, so its colours
   would not mean the same thing from week to week.
 
-**Page 3 – Store drill-down**
-- Table: `store_id`, `city_id`, `Availability %`, `Lines Out All Day`, `Sale Units`; Top N filter on the
-  20 lowest `Availability %`.
-- Column chart: `OOS Hours` by `dim_date[day_name]` (sort the column by weekday order).
-- Drill-through from Page 1's city bar to this page on `city_id`.
+**Page 3 – Store drill-down** (built: `screenshots/03-stores.png`)
+- Table: `store_id`, `city_id`, `Availability %`, `Lines Ranged`, `Lines Out All Day`, `Sale Units` and
+  `Store Rank (20+ lines)` (shown as "Rank"). Visual filters: Store Rank is less than or equal to 20, and
+  Lines Ranged is greater than or equal to 20. Background colour on `Availability %` from `Availability Colour`.
+- Do not use a Top N filter here. Top N picks the bottom 20 of all stores first, and the 20-line filter then
+  removes the small ones, which left 11 rows. The rank measure applies the 20-line rule inside the ranking.
+- The rank uses `ALLSELECTED ( dim_store )`, not just `store_id`: with `city_id` in the table, clearing only
+  `store_id` ranks each store within its own city.
+- Column chart: `Availability % (all weeks)` by `dim_date[day_name]`, colour from
+  `Availability Colour (all weeks)`, data labels on, 80% constant line. Both measures remove the
+  `week_start` filter, so the chart always covers 90 days while the table follows the week slicer. This is
+  easier to see and harder to break than an Edit interactions setting.
+- Drill-through: `dim_store[city_id]`. Right-click a city bar on Page 1 > Drill through > Page 3.
 
 **Page 4 – Data quality**
 - Table from `dq_results`: `check_name`, `rows_failed`, `detail`, filtered to the latest `run_at`.

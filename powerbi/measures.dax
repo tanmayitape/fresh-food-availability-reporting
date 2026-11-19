@@ -24,6 +24,23 @@ DEFINE
         COUNTROWS ( FILTER ( VALUES ( dim_store[store_id] ), [Availability %] < [Availability Target] ) )
     MEASURE '_Measures'[Promo Availability %] =
         CALCULATE ( [Availability %], fact_daily_sales[promo_flag] = TRUE () )
+    // Products a store stocks. Page 3 ranks only stores with 20+ lines, so one-product stores do not fill the list.
+    MEASURE '_Measures'[Lines Ranged] = DISTINCTCOUNT ( fact_daily_sales[product_id] )
+    // Rank 1 = lowest availability among stores with 20+ lines, within the current slicer and drill-through
+    // selection. Blank for smaller stores. Page 3's table keeps ranks 1-20. A Top N filter cannot do this:
+    // it picks the bottom 20 of all stores before the 20-line filter removes the small ones.
+    // ALLSELECTED ( dim_store ), not just store_id: the table also shows city_id, and clearing only store_id
+    // would rank each store within its own city. HASONEVALUE leaves the Total row blank.
+    MEASURE '_Measures'[Store Rank (20+ lines)] =
+        IF (
+            HASONEVALUE ( dim_store[store_id] ) && [Lines Ranged] >= 20,
+            RANKX (
+                FILTER ( ALLSELECTED ( dim_store ), [Lines Ranged] >= 20 ),
+                [Availability %],
+                ,
+                ASC
+            )
+        )
     MEASURE '_Measures'[DQ Rows Failed] =
         CALCULATE ( SUM ( dq_results[rows_failed] ), dq_results[run_at] = MAX ( dq_results[run_at] ) )
 
@@ -39,6 +56,13 @@ DEFINE
                 a < [Availability Target] + 0.02, "#E0A43A",
                 "#2E8B57"
             )
+
+    // Page 3 weekday chart: ignore the week slicer so each weekday covers all 90 days.
+    // The category slicer, drill-through city and the weekday axis still apply.
+    MEASURE '_Measures'[Availability % (all weeks)] =
+        CALCULATE ( [Availability %], REMOVEFILTERS ( dim_date[week_start] ) )
+    MEASURE '_Measures'[Availability Colour (all weeks)] =
+        CALCULATE ( [Availability Colour], REMOVEFILTERS ( dim_date[week_start] ) )
 
 EVALUATE
     ROW (
