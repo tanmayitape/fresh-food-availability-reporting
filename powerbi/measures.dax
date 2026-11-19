@@ -18,7 +18,7 @@ DEFINE
     MEASURE '_Measures'[Gap Rate %] = DIVIDE ( [Lines With A Gap], COUNTROWS ( fact_daily_sales ) )
     MEASURE '_Measures'[Availability % Prev Week] =
         CALCULATE ( [Availability %], DATEADD ( dim_date[dt], -7, DAY ) )
-    MEASURE '_Measures'[Availability Change (pts)] = [Availability %] - [Availability % Prev Week]
+    MEASURE '_Measures'[Change vs previous week] = [Availability %] - [Availability % Prev Week]
     MEASURE '_Measures'[Availability Target] = 0.8
     MEASURE '_Measures'[Stores Below Target] =
         COUNTROWS ( FILTER ( VALUES ( dim_store[store_id] ), [Availability %] < [Availability Target] ) )
@@ -28,9 +28,17 @@ DEFINE
         CALCULATE ( SUM ( dq_results[rows_failed] ), dq_results[run_at] = MAX ( dq_results[run_at] ) )
 
     // Colour for conditional formatting (Format > Cell elements / Bars > fx > Field value).
-    // Placeholder for Page 2: will return a hex colour such as "#C0392B" based on [Availability %].
+    // Red below the 80% target, amber within 2 points above it (watch list), green from 82%.
     MEASURE '_Measures'[Availability Colour] =
-        BLANK ()
+        VAR a = [Availability %]
+        RETURN
+            SWITCH (
+                TRUE (),
+                ISBLANK ( a ), BLANK (),
+                a < [Availability Target], "#C0392B",
+                a < [Availability Target] + 0.02, "#E0A43A",
+                "#2E8B57"
+            )
 
 EVALUATE
     ROW (
@@ -38,4 +46,12 @@ EVALUATE
         "Lines Out All Day", [Lines Out All Day],
         "Stores Below Target", [Stores Below Target],
         "DQ Rows Failed", [DQ Rows Failed]
+    )
+
+// Second result: the colour each category gets (red below target, amber within 2 points, green above).
+EVALUATE
+    SUMMARIZECOLUMNS (
+        dim_product[first_category_id],
+        "Availability %", [Availability %],
+        "Colour", [Availability Colour]
     )

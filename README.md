@@ -11,6 +11,12 @@ report and an Excel MI pack formatted by a VBA macro.
 *Power BI overview page, filtered to the week commencing 17 June 2024. The cards and city bars follow the
 week slicer; the daily line keeps the full 90 days for context.*
 
+![Power BI category page, week commencing 17 June 2024](powerbi/screenshots/02-category.png)
+
+*Category page for the same week. Cells and dots are red below the 80% target, amber within 2 points above
+it and green from 82%, using one DAX colour measure. The scatter puts sales on a log scale, so big sellers
+below the line stand out.*
+
 ## The question
 
 Which stores, categories and lines are out of stock most often, and where should a replenishment team look
@@ -49,6 +55,9 @@ Availability is measured in hours: `1 - out-of-stock hours / (lines x 16 trading
 - Cities ranged from 77.4% to 81.1%. Categories varied more: the weakest first-level category was at 72.2%.
 - In the week commencing 17 June, availability was 81.3%, down 0.45 points on the week before (81.8%).
   328 of 898 stores were below the 80% target, and 10,340 store-product-days were out of stock all day.
+- In the same week, 8 of 32 categories were below target, 7 were within 2 points above it and 17 were at
+  82% or better. The 8 below target made up 22.8% of unit sales. The one to fix first is category 29:
+  74.1% availability on 36,369 units, the largest seller below target.
 
 ## Data quality results
 

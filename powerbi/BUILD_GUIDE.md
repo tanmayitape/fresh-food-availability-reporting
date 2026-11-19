@@ -1,7 +1,8 @@
 # Power BI report: build guide
 
 The finished report is `powerbi/fresh-food-availability-reporting.pbix` (about 10 MB). Screenshots of each
-page go in `powerbi/screenshots/` so the report is visible on GitHub. Page 1 is built; pages 2–4 are planned.
+page go in `powerbi/screenshots/` so the report is visible on GitHub. Pages 1 and 2 are built; pages 3 and 4
+are planned.
 
 ## 1. Connect
 
@@ -68,7 +69,7 @@ Gap Rate % = DIVIDE ( [Lines With A Gap], COUNTROWS ( fact_daily_sales ) )
 Availability % Prev Week =
 CALCULATE ( [Availability %], DATEADD ( dim_date[dt], -7, DAY ) )
 
-Availability Change (pts) = [Availability %] - [Availability % Prev Week]
+Change vs previous week = [Availability %] - [Availability % Prev Week]
 
 Availability Target = 0.8
 
@@ -87,7 +88,7 @@ thousands separator. Model view is the easiest place: Ctrl+click several measure
 ## 4. Pages
 
 **Page 1 – Overview** (built: `screenshots/01-overview.png`)
-- Cards: `Availability %`, `Availability Change (pts)` (labelled "Change vs previous week"),
+- Cards: `Availability %`, `Change vs previous week` (custom format `+0.0%;-0.0%;0.0%`),
   `Stores Below Target`, `Lines Out All Day`.
 - Line chart: `Availability %` by `dim_date[dt]` (the date itself, not the date hierarchy), with a dashed
   constant line at 80%. Edit interactions so the week slicer does not filter it: it keeps all 90 days.
@@ -96,11 +97,19 @@ thousands separator. Model view is the easiest place: Ctrl+click several measure
 - Slicers (dropdown): `dim_date[week_start]` (single select), `dim_product[management_group_id]`.
 - The screenshot uses the week commencing 17 June 2024, the last full week.
 
-**Page 2 – Category**
-- Matrix: rows `management_group_id` > `first_category_id`; values `Availability %`, `Gap Rate %`,
-  `Sale Units`, `Promo Availability %`. Conditional formatting on `Availability %` (red below 80%).
-- Scatter: `Sale Units` (X) against `Availability %` (Y) by `first_category_id`. Big sellers with low
-  availability sit bottom right.
+**Page 2 – Category** (built: `screenshots/02-category.png`)
+- Slicers: the Page 1 slicers, synced to this page (View > Sync slicers), so a week picked on one page
+  applies on both.
+- Matrix: rows `management_group_id` > `first_category_id`, expanded; values `Availability %`, `Gap Rate %`,
+  `Sale Units`, `Promo Availability %` (renamed in the visual), sorted by availability, lowest first.
+  Background colour on `Availability %`: Cell elements > fx > Field value > `Availability Colour`, applied to
+  values and totals.
+- Scatter: `Sale Units` (X, logarithmic scale) against `Availability %` (Y) by `first_category_id`, with a
+  dashed constant line at 80% and dot colour from `Availability Colour`. Big sellers with low availability
+  sit bottom right.
+- `Availability Colour` returns red below `[Availability Target]`, amber within 2 points above it and green
+  from there up. Use Field value, not Gradient: a gradient rescales to each week's range, so its colours
+  would not mean the same thing from week to week.
 
 **Page 3 – Store drill-down**
 - Table: `store_id`, `city_id`, `Availability %`, `Lines Out All Day`, `Sale Units`; Top N filter on the
